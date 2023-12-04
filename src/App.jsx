@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import Places from "./components/Places.jsx";
 import { AVAILABLE_PLACES } from "./data.js";
@@ -15,7 +15,7 @@ function App() {
   const selectedPlace = useRef();
   const [pickedPlaces, setPickedPlaces] = useState(storedPlaces);
   const [places, setSortedPlaces] = useState([]);
-  const [modalIsOpen, setModalIsOpen] = useState(false)
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((location) => {
@@ -30,12 +30,12 @@ function App() {
   }, []);
 
   function handleStartRemovePlace(id) {
-    setModalIsOpen(true)
+    setModalIsOpen(true);
     selectedPlace.current = id;
   }
 
   function handleStopRemovePlace() {
-    setModalIsOpen(false)
+    setModalIsOpen(false);
   }
 
   function handleSelectPlace(id) {
@@ -56,26 +56,30 @@ function App() {
     }
   }
 
-  function handleRemovePlace() {
+  const handleRemovePlace = useCallback(function handleRemovePlace() {
     setPickedPlaces((prevPickedPlaces) =>
       prevPickedPlaces.filter((place) => place.id !== selectedPlace.current)
     );
-    setModalIsOpen(false)
+    setModalIsOpen(false);
 
     const storedPlaces = JSON.parse(localStorage.getItem("storedPlaces")) || [];
     localStorage.setItem(
       "storedPlaces",
       JSON.stringify(storedPlaces.filter((id) => id !== selectedPlace.current))
     );
-  }
+  }, [])
+  
+  
 
   return (
     <>
       <Modal open={modalIsOpen} updateOpen={handleStopRemovePlace}>
-        <DeleteConfirmation
-          onCancel={handleStopRemovePlace}
-          onConfirm={handleRemovePlace}
-        />
+        {modalIsOpen ? (
+          <DeleteConfirmation
+            onCancel={handleStopRemovePlace}
+            onConfirm={handleRemovePlace}
+          />
+        ) : null}
       </Modal>
 
       <header>
